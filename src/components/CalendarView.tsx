@@ -195,7 +195,10 @@ export const CalendarView = () => {
 
           <div className="flex gap-2">
             <Button
-              onClick={() => setView('timeGridWeek')}
+              onClick={() => {
+                setView('timeGridWeek');
+                calendarRef.current?.getApi().changeView('timeGridWeek');
+              }}
               variant={view === 'timeGridWeek' ? 'default' : 'outline'}
               size="sm"
               className={view === 'timeGridWeek' ? 'bg-gradient-to-r from-primary to-secondary' : ''}
@@ -204,7 +207,10 @@ export const CalendarView = () => {
               Week
             </Button>
             <Button
-              onClick={() => setView('dayGridMonth')}
+              onClick={() => {
+                setView('dayGridMonth');
+                calendarRef.current?.getApi().changeView('dayGridMonth');
+              }}
               variant={view === 'dayGridMonth' ? 'default' : 'outline'}
               size="sm"
               className={view === 'dayGridMonth' ? 'bg-gradient-to-r from-primary to-secondary' : ''}
@@ -220,7 +226,7 @@ export const CalendarView = () => {
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView={view}
+            initialView="timeGridWeek"
             headerToolbar={{
               left: 'prev,next today',
               center: 'title',
