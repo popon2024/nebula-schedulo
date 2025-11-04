@@ -82,9 +82,9 @@ export const CalendarView = () => {
     title: booking.title,
     start: booking.start,
     end: booking.end,
-    backgroundColor: booking.id === newBookingId ? 'transparent' : 'hsl(188 95% 50% / 0.2)',
+    backgroundColor: booking.id === newBookingId ? 'transparent' : 'hsl(188 95% 90%)',
     borderColor: 'hsl(188 95% 50%)',
-    textColor: 'hsl(210 40% 98%)',
+    textColor: 'hsl(222.2 84% 4.9%)',
     classNames: booking.id === newBookingId ? ['new-booking'] : [],
   }));
 
@@ -98,39 +98,40 @@ export const CalendarView = () => {
       .fc .fc-toolbar-title {
         font-size: 1.5rem;
         font-weight: 700;
-        background: linear-gradient(135deg, hsl(240 60% 40%), hsl(188 95% 50%));
+        background: linear-gradient(135deg, hsl(240 60% 50%), hsl(188 95% 50%));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
       }
       .fc .fc-button {
-        background: hsl(220 20% 15% / 0.7) !important;
-        border: 1px solid hsl(210 40% 98% / 0.1) !important;
-        color: hsl(210 40% 98%) !important;
+        background: hsl(0 0% 100%) !important;
+        border: 1px solid hsl(214.3 31.8% 91.4%) !important;
+        color: hsl(222.2 84% 4.9%) !important;
         padding: 0.5rem 1rem;
         transition: all 0.2s;
       }
       .fc .fc-button:hover {
-        background: hsl(220 20% 20% / 0.8) !important;
-        box-shadow: 0 0 20px hsl(188 95% 50% / 0.3);
+        background: hsl(210 40% 96%) !important;
+        box-shadow: 0 0 15px hsl(188 95% 50% / 0.2);
       }
       .fc .fc-button-active {
-        background: linear-gradient(135deg, hsl(240 60% 40%), hsl(188 95% 50%)) !important;
+        background: linear-gradient(135deg, hsl(240 60% 50%), hsl(188 95% 50%)) !important;
+        color: white !important;
       }
       .fc .fc-col-header-cell {
-        background: hsl(220 20% 15% / 0.5);
-        border-color: hsl(220 15% 25%);
-        color: hsl(188 95% 50%);
+        background: hsl(210 30% 98%);
+        border-color: hsl(214.3 31.8% 91.4%);
+        color: hsl(188 95% 40%);
         font-weight: 600;
         padding: 0.75rem;
       }
       .fc .fc-daygrid-day,
       .fc .fc-timegrid-slot {
-        border-color: hsl(220 15% 25%);
+        border-color: hsl(214.3 31.8% 91.4%);
       }
       .fc .fc-daygrid-day:hover,
       .fc .fc-timegrid-slot:hover {
-        background: hsl(220 20% 15% / 0.5);
+        background: hsl(210 40% 98%);
       }
       .fc .fc-event {
         border-radius: 0.5rem;
@@ -153,14 +154,14 @@ export const CalendarView = () => {
         box-shadow: 0 0 20px hsl(188 95% 50% / 0.8);
       }
       .fc .fc-day-today {
-        background: hsl(188 95% 50% / 0.05) !important;
+        background: hsl(188 95% 95%) !important;
       }
       .fc .fc-daygrid-day-number,
       .fc .fc-timegrid-slot-label {
-        color: hsl(210 40% 98%);
+        color: hsl(222.2 84% 4.9%);
       }
       .fc .fc-scrollgrid {
-        border-color: hsl(220 15% 25%);
+        border-color: hsl(214.3 31.8% 91.4%);
       }
     `;
     document.head.appendChild(style);
