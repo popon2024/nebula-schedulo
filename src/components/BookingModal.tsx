@@ -13,18 +13,24 @@ interface BookingModalProps {
     start: Date;
     end: Date;
   }) => void;
+  onDelete?: () => void;
   initialStart?: Date;
   initialEnd?: Date;
+  initialName?: string;
+  isEditMode?: boolean;
 }
 
 export const BookingModal = ({
   isOpen,
   onClose,
   onSubmit,
+  onDelete,
   initialStart,
   initialEnd,
+  initialName,
+  isEditMode = false,
 }: BookingModalProps) => {
-  const [name, setName] = useState('');
+  const [name, setName] = useState(initialName || '');
   const [startDate, setStartDate] = useState(
     initialStart?.toISOString().slice(0, 16) || ''
   );
@@ -84,10 +90,10 @@ export const BookingModal = ({
               {/* Header */}
               <div className="mb-6">
                 <h2 className="text-2xl font-bold gradient-text mb-2">
-                  Book Meeting Room
+                  {isEditMode ? 'Edit Meeting' : 'Book Meeting Room'}
                 </h2>
                 <p className="text-muted-foreground text-sm">
-                  Schedule your meeting with ease
+                  {isEditMode ? 'Update your meeting details' : 'Schedule your meeting with ease'}
                 </p>
               </div>
 
@@ -141,12 +147,27 @@ export const BookingModal = ({
                   />
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity text-primary-foreground font-semibold py-6"
-                >
-                  Create Booking
-                </Button>
+                <div className="flex gap-3">
+                  {isEditMode && onDelete && (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        onDelete();
+                        onClose();
+                      }}
+                      variant="outline"
+                      className="flex-1 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground py-6"
+                    >
+                      Delete
+                    </Button>
+                  )}
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity text-primary-foreground font-semibold py-6"
+                  >
+                    {isEditMode ? 'Update' : 'Create Booking'}
+                  </Button>
+                </div>
               </form>
             </motion.div>
           </div>

@@ -19,6 +19,12 @@ export const CalendarView = () => {
   } | null>(null);
   const [view, setView] = useState<'dayGridMonth' | 'timeGridWeek'>('timeGridWeek');
   const [newBookingId, setNewBookingId] = useState<string | null>(null);
+  const [editingBooking, setEditingBooking] = useState<{
+    id: string;
+    name: string;
+    start: Date;
+    end: Date;
+  } | null>(null);
 
   // Handle date selection
   const handleDateSelect = (selectInfo: any) => {
@@ -45,10 +51,12 @@ export const CalendarView = () => {
     });
   };
 
-  // Handle event click (delete)
+  // Handle event click (edit)
   const handleEventClick = (clickInfo: any) => {
-    if (confirm(`Delete booking for ${clickInfo.event.title}?`)) {
-      deleteBooking(clickInfo.event.id);
+    const booking = bookings.find(b => b.id === clickInfo.event.id);
+    if (booking) {
+      setEditingBooking(booking);
+      setIsModalOpen(true);
     }
   };
 
@@ -58,22 +66,33 @@ export const CalendarView = () => {
     start: Date;
     end: Date;
   }) => {
-    const newBooking = {
-      title: `${data.name}'s Meeting`,
-      name: data.name,
-      start: data.start,
-      end: data.end,
-    };
-    addBooking(newBooking);
-    
-    // Trigger shimmer animation for new booking
-    setTimeout(() => {
-      const lastBooking = bookings[bookings.length - 1];
-      if (lastBooking) {
-        setNewBookingId(lastBooking.id);
-        setTimeout(() => setNewBookingId(null), 2000);
-      }
-    }, 100);
+    if (editingBooking) {
+      // Update existing booking
+      updateBooking(editingBooking.id, {
+        title: `${data.name}'s Meeting`,
+        name: data.name,
+        start: data.start,
+        end: data.end,
+      });
+    } else {
+      // Create new booking
+      const newBooking = {
+        title: `${data.name}'s Meeting`,
+        name: data.name,
+        start: data.start,
+        end: data.end,
+      };
+      addBooking(newBooking);
+      
+      // Trigger shimmer animation for new booking
+      setTimeout(() => {
+        const lastBooking = bookings[bookings.length - 1];
+        if (lastBooking) {
+          setNewBookingId(lastBooking.id);
+          setTimeout(() => setNewBookingId(null), 2000);
+        }
+      }, 100);
+    }
   };
 
   // Convert bookings to FullCalendar events
@@ -257,10 +276,14 @@ export const CalendarView = () => {
         onClose={() => {
           setIsModalOpen(false);
           setSelectedSlot(null);
+          setEditingBooking(null);
         }}
         onSubmit={handleBookingSubmit}
-        initialStart={selectedSlot?.start}
-        initialEnd={selectedSlot?.end}
+        onDelete={editingBooking ? () => deleteBooking(editingBooking.id) : undefined}
+        initialStart={editingBooking?.start || selectedSlot?.start}
+        initialEnd={editingBooking?.end || selectedSlot?.end}
+        initialName={editingBooking?.name}
+        isEditMode={!!editingBooking}
       />
     </div>
   );
