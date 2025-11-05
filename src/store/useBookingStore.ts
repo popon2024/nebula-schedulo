@@ -3,7 +3,7 @@ import { create } from 'zustand';
 export interface Booking {
   id: string;
   title: string;
-  name: string;
+  purpose: string; // ✅ ganti dari name -> purpose
   start: Date;
   end: Date;
 }
@@ -17,6 +17,7 @@ interface BookingStore {
 
 export const useBookingStore = create<BookingStore>((set) => ({
   bookings: [],
+
   addBooking: (booking) =>
     set((state) => ({
       bookings: [
@@ -27,12 +28,14 @@ export const useBookingStore = create<BookingStore>((set) => ({
         },
       ],
     })),
+
   updateBooking: (id, updatedBooking) =>
     set((state) => ({
       bookings: state.bookings.map((b) =>
         b.id === id ? { ...b, ...updatedBooking } : b
       ),
     })),
+
   deleteBooking: (id) =>
     set((state) => ({
       bookings: state.bookings.filter((b) => b.id !== id),
