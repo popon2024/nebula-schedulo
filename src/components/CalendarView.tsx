@@ -188,7 +188,7 @@ export const CalendarView = () => {
             </div>
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold gradient-text">
-                IB-Room
+                IB-ROOM
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 {bookings.length}{" "}
