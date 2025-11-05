@@ -19,15 +19,16 @@ router.get("/", async (_req, res) => {
 // 🟢 POST new booking
 router.post("/", async (req, res) => {
   try {
-    const { userId, roomName, startTime, endTime, purpose } = req.body;
+    const { userId, pic, startTime, endTime, purpose } = req.body;
 
     const booking = await prisma.bookingMeeting.create({
       data: {
-        userId: Number(userId) || 1, // default user (sementara)
-        roomName: roomName || "Default Room",
+        userId: Number(userId) || 1,
+        pic: pic || "Unknown", 
         startTime: new Date(startTime),
         endTime: new Date(endTime),
         purpose,
+        roomName: "R&D",
       },
     });
 
@@ -42,7 +43,7 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { purpose, startTime, endTime, roomName } = req.body;
+    const { purpose, startTime, endTime, pic } = req.body;
 
     const updated = await prisma.bookingMeeting.update({
       where: { id: Number(id) },
@@ -50,7 +51,7 @@ router.put("/:id", async (req, res) => {
         purpose,
         startTime: startTime ? new Date(startTime) : undefined,
         endTime: endTime ? new Date(endTime) : undefined,
-        roomName,
+        pic,
       },
     });
 

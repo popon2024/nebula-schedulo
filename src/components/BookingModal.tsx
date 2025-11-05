@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, Clock, Target } from "lucide-react";
+import { X, Clock, User, NotebookPen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/api";
+import { Booking } from "@/store/useBookingStore";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -15,12 +16,19 @@ interface BookingModalProps {
   initialStart?: Date;
   initialEnd?: Date;
   initialPurpose?: string;
+  initialPIC?: string;
   isEditMode?: boolean;
+  data: any;
   fetchBookings: () => void;
-  onSubmit?: (data: { purpose: string; startTime: Date; endTime: Date }) => void;
+  onSubmit?: (data: {
+    purpose: string;
+    startTime: Date;
+    endTime: Date;
+    pic: string;
+  }) => void;
 }
 
-// ✅ Helper untuk konversi Date → value input lokal tanpa bug timezone
+// Helper untuk konversi Date → input lokal
 function toLocalInputValue(date?: Date) {
   if (!date) return "";
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
@@ -34,32 +42,71 @@ export const BookingModal = ({
   initialStart,
   initialEnd,
   initialPurpose,
+  initialPIC,
   isEditMode = false,
   onSubmit,
+  data,
   fetchBookings,
 }: BookingModalProps) => {
   const [purpose, setPurpose] = useState(initialPurpose || "");
+  const [pic, setPic] = useState(initialPIC || "");
   const [startDate, setStartDate] = useState(toLocalInputValue(initialStart));
   const [endDate, setEndDate] = useState(toLocalInputValue(initialEnd));
   const [loading, setLoading] = useState(false);
 
+  // 🔹 Error state untuk field start & end
+  const [startError, setStartError] = useState("");
+  const [endError, setEndError] = useState("");
+
   useEffect(() => {
     if (isOpen) {
       setPurpose(initialPurpose || "");
+      setPic(initialPIC || "");
       setStartDate(toLocalInputValue(initialStart));
       setEndDate(toLocalInputValue(initialEnd));
+      setStartError("");
+      setEndError("");
     }
-  }, [isOpen, initialPurpose, initialStart, initialEnd]);
+  }, [isOpen, initialPurpose, initialPIC, initialStart, initialEnd]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!purpose || !startDate || !endDate) return;
 
-    const payload = {
-      purpose,
-      startTime: new Date(startDate),
-      endTime: new Date(endDate),
-    };
+    // Reset error
+    setStartError("");
+    setEndError("");
+
+    if (!purpose || !pic || !startDate || !endDate) return;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Validasi end setelah start
+    if (end <= start) {
+      setStartError("Start time must be before end time");
+      setEndError("End time must be after start time");
+      return;
+    }
+
+    // Validasi bentrok dengan data lain
+    const conflictBooking = data.find((booking: Booking) => {
+      const existingStart = new Date(booking.start);
+      const existingEnd = new Date(booking.end);
+
+      // Abaikan booking yang sedang diedit
+      if (isEditMode && booking.id === initialId) return false;
+
+      return start < existingEnd && end > existingStart;
+    });
+
+    if (conflictBooking) {
+      setStartError("Selected time conflicts with another booking");
+      setEndError("Selected time conflicts with another booking");
+      return;
+    }
+
+    // Submit
+    const payload = { purpose, pic, startTime: start, endTime: end };
     onSubmit?.(payload);
   };
 
@@ -123,7 +170,7 @@ export const BookingModal = ({
                 {/* Purpose */}
                 <div className="space-y-2">
                   <Label htmlFor="purpose" className="flex items-center gap-2 text-foreground">
-                    <Target className="h-4 w-4 text-primary" />
+                    <NotebookPen className="h-4 w-4 text-secondary" />
                     Purpose
                   </Label>
                   <Input
@@ -136,10 +183,26 @@ export const BookingModal = ({
                   />
                 </div>
 
-                {/* Start Time */}
+                {/* PIC */}
                 <div className="space-y-2">
+                  <Label htmlFor="pic" className="flex items-center gap-2 text-foreground">
+                    <User className="h-4 w-4 text-secondary" />
+                    PIC (Person in Charge)
+                  </Label>
+                  <Input
+                    id="pic"
+                    type="text"
+                    value={pic}
+                    onChange={(e) => setPic(e.target.value)}
+                    placeholder="Enter responsible person"
+                    required
+                  />
+                </div>
+
+                {/* Start Time */}
+                <div className="space-y-1">
                   <Label htmlFor="start" className="flex items-center gap-2 text-foreground">
-                    <Calendar className="h-4 w-4 text-secondary" />
+                    <Clock className="h-4 w-4 text-secondary" />
                     Start Time
                   </Label>
                   <Input
@@ -149,13 +212,15 @@ export const BookingModal = ({
                     onChange={(e) => setStartDate(e.target.value)}
                     max="2030-12-31T23:59"
                     required
+                    className={startError ? "border-destructive" : ""}
                   />
+                  {startError && <p className="text-destructive text-sm">{startError}</p>}
                 </div>
 
                 {/* End Time */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label htmlFor="end" className="flex items-center gap-2 text-foreground">
-                    <Clock className="h-4 w-4 text-accent" />
+                    <Clock className="h-4 w-4 text-secondary" />
                     End Time
                   </Label>
                   <Input
@@ -165,7 +230,9 @@ export const BookingModal = ({
                     onChange={(e) => setEndDate(e.target.value)}
                     max="2030-12-31T23:59"
                     required
+                    className={endError ? "border-destructive" : ""}
                   />
+                  {endError && <p className="text-destructive text-sm">{endError}</p>}
                 </div>
 
                 <div className="flex gap-3">

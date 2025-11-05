@@ -26,6 +26,7 @@ model BookingMeeting {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     Int
   roomName   String
+  pic        String   @default("")
   startTime  DateTime
   endTime    DateTime
   purpose    String?

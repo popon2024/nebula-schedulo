@@ -40,3 +40,8 @@
 .read-the-docs {
   color: #888;
 }
+
+
+.fc-day-disabled {
+  background: var(--fc-button-bg-color);
+}

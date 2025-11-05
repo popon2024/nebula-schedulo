@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
 import { useRef, useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -19,6 +21,7 @@ interface Booking {
   purpose: string;
   start: Date;
   end: Date;
+  pic: string;
 }
 
 export const CalendarView = () => {
@@ -43,6 +46,7 @@ export const CalendarView = () => {
             purpose: b.purpose,
             start: new Date(b.startTime),
             end: new Date(b.endTime),
+            pic: b.pic || "",
           }))
         );
       }
@@ -55,7 +59,7 @@ export const CalendarView = () => {
     setIsModalOpen(false);
     setSelectedSlot(null);
     setEditingBooking(null);
-  }
+  };
 
   useEffect(() => {
     fetchBookings();
@@ -72,21 +76,22 @@ export const CalendarView = () => {
     purpose: string;
     startTime: Date;
     endTime: Date;
+    pic: string;
   }) => {
     const payload = {
       purpose: data.purpose,
       startTime: data.startTime.toISOString(),
       endTime: data.endTime.toISOString(),
+      pic: data.pic,
     };
 
     try {
       if (editingBooking) {
         await apiRequest(`${API_URL}/${editingBooking.id}`, "PUT", payload);
-        fetchBookings();
       } else {
         await apiRequest(API_URL, "POST", payload);
-        fetchBookings();
       }
+      fetchBookings();
     } catch (err) {
       console.error("❌ Failed to save booking:", err);
     } finally {
@@ -102,8 +107,17 @@ export const CalendarView = () => {
       endTime: dropInfo.event.end?.toISOString(),
     };
 
+    // update local state instantly
     setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, start: new Date(payload.startTime!), end: new Date(payload.endTime!) } : b))
+      prev.map((b) =>
+        b.id === id
+          ? {
+              ...b,
+              start: new Date(payload.startTime!),
+              end: new Date(payload.endTime!),
+            }
+          : b
+      )
     );
 
     await apiRequest(`${API_URL}/${id}`, "PUT", payload);
@@ -118,7 +132,15 @@ export const CalendarView = () => {
     };
 
     setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, start: new Date(payload.startTime!), end: new Date(payload.endTime!) } : b))
+      prev.map((b) =>
+        b.id === id
+          ? {
+              ...b,
+              start: new Date(payload.startTime!),
+              end: new Date(payload.endTime!),
+            }
+          : b
+      )
     );
 
     await apiRequest(`${API_URL}/${id}`, "PUT", payload);
@@ -133,6 +155,7 @@ export const CalendarView = () => {
         start: new Date(booking.start),
         end: new Date(booking.end),
         purpose: booking.purpose || "",
+        pic: booking.pic || "",
       });
       setIsModalOpen(true);
     }
@@ -141,7 +164,7 @@ export const CalendarView = () => {
   /* ✨ Convert bookings → FullCalendar format */
   const events = bookings.map((b) => ({
     id: b.id,
-    title: b.purpose,
+    title: `${b.purpose} (${b.pic})`,
     start: b.start,
     end: b.end,
     backgroundColor: b.id === newBookingId ? "transparent" : "hsl(188 95% 90%)",
@@ -165,10 +188,11 @@ export const CalendarView = () => {
             </div>
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold gradient-text">
-                Meeting Booking
+                IB-Room
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                {bookings.length} {bookings.length === 1 ? "booking" : "bookings"} scheduled
+                {bookings.length}{" "}
+                {bookings.length === 1 ? "booking" : "bookings"} scheduled
               </p>
             </div>
           </div>
@@ -181,7 +205,11 @@ export const CalendarView = () => {
               }}
               variant={view === "timeGridWeek" ? "default" : "outline"}
               size="sm"
-              className={view === "timeGridWeek" ? "bg-gradient-to-r from-primary to-secondary" : ""}
+              className={
+                view === "timeGridWeek"
+                  ? "bg-gradient-to-r from-primary to-secondary"
+                  : ""
+              }
             >
               <Grid className="h-4 w-4 mr-2" />
               Week
@@ -193,7 +221,11 @@ export const CalendarView = () => {
               }}
               variant={view === "dayGridMonth" ? "default" : "outline"}
               size="sm"
-              className={view === "dayGridMonth" ? "bg-gradient-to-r from-primary to-secondary" : ""}
+              className={
+                view === "dayGridMonth"
+                  ? "bg-gradient-to-r from-primary to-secondary"
+                  : ""
+              }
             >
               <List className="h-4 w-4 mr-2" />
               Month
@@ -205,7 +237,7 @@ export const CalendarView = () => {
         <div className="rounded-xl overflow-hidden">
           <FullCalendar
             ref={calendarRef}
-            timeZone="local" // ✅ consistent with local browser time
+            timeZone="local"
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="timeGridWeek"
             headerToolbar={{
@@ -238,6 +270,7 @@ export const CalendarView = () => {
       {/* Booking Modal */}
       <BookingModal
         isOpen={isModalOpen}
+        data={bookings}
         onClose={onClose}
         fetchBookings={fetchBookings}
         onSubmit={handleBookingSubmit}
@@ -245,6 +278,7 @@ export const CalendarView = () => {
         initialEnd={editingBooking?.end || selectedSlot?.end}
         initialId={editingBooking?.id}
         initialPurpose={editingBooking?.purpose}
+        initialPIC={editingBooking?.pic}
         isEditMode={!!editingBooking}
       />
     </div>
